@@ -5,6 +5,25 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.hub.stoper.Controller">
-</VBox>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane fx:id="main"
+        xmlns:fx="http://javafx.com/fxml" fx:controller="com.hub.stoper.Controller">
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="User" >
+                    <items>
+                        <MenuItem text="Add" onAction="#addNewUserOnClick"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+</BorderPane>
