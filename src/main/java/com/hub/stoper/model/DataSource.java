@@ -22,20 +22,32 @@ public class DataSource {
 
     //QUERY
 
-    public static final String QUERY_USERS_BY_NAME = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_ID+
+    public static final String QUERY_USERS_BY_NAME = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_CURRENT_USER+
         " FROM " + TABLE_USERS +
         " WHERE " +COLUMNS_USERS_NAME + " = ?";
+    public static final String QUERY_USERS = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_CURRENT_USER+
+            " FROM " + TABLE_USERS;
+
+    public static final String QUERY_CURRENT_USER = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_CURRENT_USER+
+            " FROM " + TABLE_USERS+
+            " WHERE " + COLUMNS_USERS_CURRENT_USER + " = 1 ";
 
     //INSERTS
     public static final String INSERT_USER = " INSERT INTO " + TABLE_USERS +
             " (name) VALUES(?)";
 
-
-
+    //UPDATES
+    public static final String UPDATE_USER_CURRENT_USER_BY_ID = "UPDATE " + TABLE_USERS +
+            " SET " + COLUMNS_USERS_CURRENT_USER + " = ?" +
+            " WHERE " + COLUMNS_USERS_ID + " = ?";
 
     //Prepared Statements
     private PreparedStatement queryUsersByName;
     private PreparedStatement insertUser;
+
+    private PreparedStatement updateUserCurrentUserById;
+
+
     private static DataSource dataSource = new DataSource();
     private Connection connection;
 
@@ -53,6 +65,7 @@ public class DataSource {
             connection = DriverManager.getConnection(DATABASE_PATH);
             queryUsersByName = connection.prepareStatement(QUERY_USERS_BY_NAME);
             insertUser = connection.prepareStatement(INSERT_USER);
+            updateUserCurrentUserById = connection.prepareStatement(UPDATE_USER_CURRENT_USER_BY_ID);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -60,6 +73,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            updateUserCurrentUserById.close();
             insertUser.close();
             queryUsersByName.close();
             connection.close();
@@ -68,6 +82,25 @@ public class DataSource {
             e.printStackTrace();
         }
 
+    }
+
+    public List<User> getUsers(){
+        try(Statement queryUsers = connection.createStatement();
+            ResultSet resultSet = queryUsers.executeQuery(QUERY_USERS))   {
+            List<User> userList = new ArrayList<>();
+            while(resultSet.next()){
+                User user = new User();
+                user.setId(resultSet.getInt(1));
+                user.setName(resultSet.getString(2));
+                user.setCurrentUser(resultSet.getInt(3));
+                userList.add(user);
+            }
+            userList.forEach( (user ) -> System.out.println("Name: " + user.getName() + " ID: " + user.getId()));
+            return userList;
+        }catch (SQLException e){
+            System.out.println("Something went wrong: " + e.getMessage());
+            return null;
+        }
     }
 
     public List<User> getUserByName(String name){
@@ -87,6 +120,72 @@ public class DataSource {
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             return null;
+        }
+    }
+
+    public User getCurrentUser(){
+        try(Statement statement = connection.createStatement();
+            ResultSet set = statement.executeQuery(QUERY_CURRENT_USER)){
+
+            if(set.next()) {
+                User user = new User();
+                user.setId(set.getInt(1));
+                user.setName(set.getString(2));
+                user.setCurrentUser(1);
+                return user;
+            }else{
+                return null;
+            }
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+    //takes new user id and set him as current user and makes sure that current user will no longer be current
+    public boolean updateCurrentUser(int id){
+        User currentUser = getCurrentUser();
+        try{
+            connection.setAutoCommit(false);
+            if(currentUser != null){
+                updateUserCurrentUserById.setInt(1, 0);
+                updateUserCurrentUserById.setInt(2, currentUser.getId());
+
+                System.out.println(updateUserCurrentUserById.toString());
+
+                int rowsAffected = updateUserCurrentUserById.executeUpdate();
+                if (rowsAffected != 1) {
+                    throw new SQLException("Updated to many rows");// That shouldn't be error because nothing bad happens --> change it to log
+                }
+            }
+
+            updateUserCurrentUserById.setInt(1,1);
+            updateUserCurrentUserById.setInt(2,id);
+
+            System.out.println(updateUserCurrentUserById.toString());
+
+            int rowsAffected = updateUserCurrentUserById.executeUpdate();
+            System.out.println(id);
+            if(rowsAffected > 1){
+                throw new SQLException("Updated to many rows");// Here it is error
+            }
+            connection.commit();
+            return true;
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            try {
+                connection.rollback();
+            }catch (SQLException e2){
+                System.out.println("Rollback didn't work !!!");
+            }
+            return false;
+        }finally {
+            try {
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit is false");
+            }
         }
     }
 

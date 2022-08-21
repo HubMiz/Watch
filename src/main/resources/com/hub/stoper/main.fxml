@@ -20,6 +20,7 @@
                 <Menu text="User" >
                     <items>
                         <MenuItem text="Add" onAction="#addNewUserOnClick"/>
+                        <MenuItem text="Change" onAction="#changeUser"/>
                     </items>
                 </Menu>
             </menus>
