@@ -1,4 +1,4 @@
-package com.hub.stoper;
+package com.hub.stoper.controllers;
 
 import com.hub.stoper.model.DataSource;
 import com.hub.stoper.model.User;
@@ -37,7 +37,6 @@ public class ChangeUserController {
 
     public void changeUser(){
         int id = changeUserListView.getSelectionModel().getSelectedItem().getId();
-        System.out.println(id);
         DataSource.getInstance().updateCurrentUser(id);
     }
 

@@ -1,11 +1,9 @@
-package com.hub.stoper;
+package com.hub.stoper.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
@@ -23,7 +21,6 @@ public class Controller {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Add new user");
         dialog.initOwner(main.getScene().getWindow());
-
         FXMLLoader loader = new FXMLLoader(getClass().getResource("newUser.fxml"));
 
         try {

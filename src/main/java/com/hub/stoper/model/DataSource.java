@@ -95,7 +95,6 @@ public class DataSource {
                 user.setCurrentUser(resultSet.getInt(3));
                 userList.add(user);
             }
-            userList.forEach( (user ) -> System.out.println("Name: " + user.getName() + " ID: " + user.getId()));
             return userList;
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
@@ -143,6 +142,7 @@ public class DataSource {
         }
     }
     //takes new user id and set him as current user and makes sure that current user will no longer be current
+    //Todo test nulls
     public boolean updateCurrentUser(int id){
         User currentUser = getCurrentUser();
         try{
@@ -150,8 +150,6 @@ public class DataSource {
             if(currentUser != null){
                 updateUserCurrentUserById.setInt(1, 0);
                 updateUserCurrentUserById.setInt(2, currentUser.getId());
-
-                System.out.println(updateUserCurrentUserById.toString());
 
                 int rowsAffected = updateUserCurrentUserById.executeUpdate();
                 if (rowsAffected != 1) {
@@ -162,10 +160,8 @@ public class DataSource {
             updateUserCurrentUserById.setInt(1,1);
             updateUserCurrentUserById.setInt(2,id);
 
-            System.out.println(updateUserCurrentUserById.toString());
 
             int rowsAffected = updateUserCurrentUserById.executeUpdate();
-            System.out.println(id);
             if(rowsAffected > 1){
                 throw new SQLException("Updated to many rows");// Here it is error
             }

@@ -1,4 +1,4 @@
-package com.hub.stoper;
+package com.hub.stoper.controllers;
 
 import com.hub.stoper.model.DataSource;
 import com.hub.stoper.model.User;

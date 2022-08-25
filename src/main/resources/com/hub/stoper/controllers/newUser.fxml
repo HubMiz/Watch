@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.GridPane?>
 <DialogPane fx:id="addNewUserFXML"
         xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.hub.stoper.NewUserController">
+            fx:controller="com.hub.stoper.controllers.NewUserController">
     <header>
         <Text disable="true" text="Insert new User" textAlignment="CENTER" />
     </header>
