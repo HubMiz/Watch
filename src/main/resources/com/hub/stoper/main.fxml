@@ -22,7 +22,7 @@
       <VBox layoutX="145.0" prefWidth="145.0" spacing="10" BorderPane.alignment="CENTER">
          <children>
             <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="58.0" prefWidth="148.0" text="Menu" textAlignment="CENTER" />
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Alarm">
+            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Alarm" onAction="#mainDisplayAlarms">
                 <graphic>
                     <ImageView>
                         <image >
@@ -31,7 +31,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Minutnik" >
+            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Timer" onAction="#mainDisplayTimers" >
                 <graphic>
                     <ImageView>
                         <image>
@@ -40,7 +40,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Button" >
+            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Stopwatch" onAction="#mainDisplayStopWatch" >
                 <graphic>
                     <ImageView>
                         <image>
@@ -59,7 +59,7 @@
       </VBox>
    </left>
    <center>
-      <GridPane prefHeight="427.0" prefWidth="473.0" BorderPane.alignment="CENTER">
+      <GridPane fx:id="mainCenterGridPane" prefHeight="427.0" prefWidth="473.0" BorderPane.alignment="CENTER">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

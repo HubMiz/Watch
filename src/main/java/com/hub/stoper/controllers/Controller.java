@@ -1,19 +1,29 @@
 package com.hub.stoper.controllers;
 
+
+import com.hub.stoper.model.StopwatchTime;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.util.Duration;
 
 import java.io.IOException;
+
 import java.util.Optional;
 
 public class Controller {
 
-
     @FXML
     private BorderPane main;
+
+    @FXML
+    private GridPane mainCenterGridPane;
 
     @FXML
     public void addNewUserOnClick() {
@@ -67,5 +77,29 @@ public class Controller {
             controller.selectedItem();
             System.out.println("Canceled");
         }
+    }
+
+    @FXML
+    public void mainDisplayAlarms(){
+        mainCenterGridPane.getChildren().clear();//Clear GridPane
+    }
+    @FXML
+    public void mainDisplayTimers(){
+        mainCenterGridPane.getChildren().clear();//Clear GridPane
+    }
+    @FXML
+    public void mainDisplayStopWatch(){
+        mainCenterGridPane.getChildren().clear();//Clear GridPane
+        final Label clock = new Label();//Creating label
+
+        StopwatchTime stopwatchTime = new StopwatchTime();
+
+        clock.textProperty().bind(stopwatchTime.getTime());
+
+        Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> stopwatchTime.updateTime()));
+        changeTime.setCycleCount(Timeline.INDEFINITE);
+        changeTime.play();
+
+        mainCenterGridPane.add(clock,0,0);
     }
 }
