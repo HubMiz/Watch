@@ -3,6 +3,7 @@ package com.hub.stoper;
 import com.hub.stoper.model.DataSource;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -20,6 +21,10 @@ public class Application extends javafx.application.Application {
     @Override
     public void init() throws Exception {
         super.init();
+
+        //Loading custom font
+        Font.loadFont(getClass().getResource("controllers/styles/clock-font.ttf").toExternalForm(),10);
+
         DataSource.getInstance().open();
     }
 

@@ -4,13 +4,19 @@ package com.hub.stoper.controllers;
 import com.hub.stoper.model.StopwatchTime;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -89,17 +95,77 @@ public class Controller {
     }
     @FXML
     public void mainDisplayStopWatch(){
-        mainCenterGridPane.getChildren().clear();//Clear GridPane
-        final Label clock = new Label();//Creating label
+        //Clearing gridPane from elements
+        mainCenterGridPane.getChildren().clear();
+        mainCenterGridPane.getRowConstraints().clear();
+        mainCenterGridPane.getColumnConstraints().clear();
 
+        //Creating Row and Column Constraints
+        RowConstraints row1 = new RowConstraints();
+        row1.setPercentHeight(30);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setHalignment(HPos.CENTER);
+
+        mainCenterGridPane.getRowConstraints().add(row1);
+        mainCenterGridPane.getColumnConstraints().add(col1);
+
+
+        //Creating UI elements
+        Label clock = new Label();//Creating label
+        VBox vboxForClockAndButtons = new VBox();
+        HBox buttonHBox = new HBox();
+
+
+        buttonHBox.setAlignment(Pos.CENTER);
+        buttonHBox.setPadding(new Insets(20,10,10,10));
+        buttonHBox.setSpacing(20);
+        clock.setMinWidth(Region.USE_PREF_SIZE);
+        clock.setMinHeight(Region.USE_PREF_SIZE);
+
+
+        //Creating stopwatch
         StopwatchTime stopwatchTime = new StopwatchTime();
 
-        clock.textProperty().bind(stopwatchTime.getTime());
+        clock.textProperty().bind(stopwatchTime.getTime());//bind data to stopwatch string property
 
-        Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> stopwatchTime.updateTime()));
+        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> stopwatchTime.updateTime()));
         changeTime.setCycleCount(Timeline.INDEFINITE);
-        changeTime.play();
 
-        mainCenterGridPane.add(clock,0,0);
+
+
+        //Creating start stop buttons
+        Button startButton = new Button("Start");
+
+        Button stopButton = new Button("Stop");
+
+        buttonHBox.getChildren().add(0,startButton);
+        buttonHBox.getChildren().add(1,stopButton);
+
+
+        startButton.setOnAction((ActionEvent event) ->changeTime.play());
+
+
+        stopButton.setOnAction((ActionEvent event) -> changeTime.stop());
+
+        //Adding elements to UI elements
+
+        vboxForClockAndButtons.getChildren().add(0,clock);
+
+        vboxForClockAndButtons.getChildren().add(1,buttonHBox);
+
+        mainCenterGridPane.add(vboxForClockAndButtons,0,0);
+
+        //Setting ids for CSS
+        stopButton.setId("stopwatch-stop-button");
+        startButton.setId("stopwatch-start-button");
+        clock.setId("stopwatch-clock");
+        mainCenterGridPane.setId("stopwatch-grid");
+
+        //Adding css
+        mainCenterGridPane.setAlignment(Pos.CENTER);
+        GridPane.setMargin(mainCenterGridPane, new Insets(5, 0, 5, 0));
+        mainCenterGridPane.getStylesheets().add(getClass().getResource("styles/stoper.css").toString());
+
     }
 }

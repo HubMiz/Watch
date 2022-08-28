@@ -19,12 +19,12 @@ public class StopwatchTime  {
     }
 
     public void updateTime(){
-        if(seconds.get() < 60){
+        if(seconds.get() < 59){
             seconds.set(seconds.get()+1);
-        } else if (minutes.get() < 60) {
+        } else if (minutes.get() < 59) {
             seconds.set(0);
             minutes.set(minutes.get()+1);
-        } else if (hours.get() < 24) {
+        } else if (hours.get() < 23) {
             seconds.set(0);
             minutes.set(0);
             hours.set(hours.get()+1);

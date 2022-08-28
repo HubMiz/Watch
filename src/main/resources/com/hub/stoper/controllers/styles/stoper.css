@@ -1,0 +1,18 @@
+
+#stopwatch-start-button {
+    -fx-background-color: #1e8f07;
+}
+
+#stopwatch-stop-button {
+    -fx-background-color: #c77006;
+}
+
+#stopwatch-grid{
+	-fx-background-color: #2c2833;
+}
+#stopwatch-clock{
+	-fx-font-family: "Digital dream";
+	-fx-text-fill: #c4c237;
+	-fx-font-weight: bold;
+	-fx-font-size: 30px;
+}
