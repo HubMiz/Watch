@@ -19,6 +19,15 @@ public class DataSource {
     public static final String COLUMNS_USERS_NAME = "name";
     public static final String COLUMNS_USERS_CURRENT_USER = "currentUser";
 
+    //Stopwatches table
+    public static final String TABLE_STOPWATCHES = "stopWatches";
+
+    public static final String COLUMNS_STOPWATCHES_ID = "id";
+    public static final String COLUMNS_STOPWATCHES_USERID = "userID";
+    public static final String COLUMNS_STOPWATCHES_HOURS = "hours";
+    public static final String COLUMNS_STOPWATCHES_MINUTES = "minutes";
+    public static final String COLUMNS_STOPWATCHES_SECONDS = "seconds";
+    public static final String COLUMNS_STOPWATCHES_LABEL = "label";
 
     //QUERY
 
@@ -35,6 +44,10 @@ public class DataSource {
     //INSERTS
     public static final String INSERT_USER = " INSERT INTO " + TABLE_USERS +
             " (name) VALUES(?)";
+    public static final String INSERT_STOPWATCH_TIME =" INSERT INTO " + TABLE_STOPWATCHES +
+            " ("+COLUMNS_STOPWATCHES_USERID+","+COLUMNS_STOPWATCHES_HOURS+","+COLUMNS_STOPWATCHES_MINUTES+","+COLUMNS_STOPWATCHES_SECONDS+","+ COLUMNS_STOPWATCHES_LABEL+")"+
+            " VALUES(?,?,?,?,?)";
+
 
     //UPDATES
     public static final String UPDATE_USER_CURRENT_USER_BY_ID = "UPDATE " + TABLE_USERS +
@@ -44,6 +57,7 @@ public class DataSource {
     //Prepared Statements
     private PreparedStatement queryUsersByName;
     private PreparedStatement insertUser;
+    private PreparedStatement insertStopwatches;
 
     private PreparedStatement updateUserCurrentUserById;
 
@@ -66,6 +80,7 @@ public class DataSource {
             queryUsersByName = connection.prepareStatement(QUERY_USERS_BY_NAME);
             insertUser = connection.prepareStatement(INSERT_USER);
             updateUserCurrentUserById = connection.prepareStatement(UPDATE_USER_CURRENT_USER_BY_ID);
+            insertStopwatches = connection.prepareStatement(INSERT_STOPWATCH_TIME);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -73,6 +88,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            insertStopwatches.close();
             updateUserCurrentUserById.close();
             insertUser.close();
             queryUsersByName.close();
@@ -214,6 +230,43 @@ public class DataSource {
 
     }
 
+    public boolean insertStopwatchTime(int hours,int minutes,int seconds,String label){
+
+        try{
+           connection.setAutoCommit(false);
+
+           User currentUser = getCurrentUser();
+
+           insertStopwatches.setInt(1,currentUser.getId());
+           insertStopwatches.setInt(2,hours);
+           insertStopwatches.setInt(3,minutes);
+           insertStopwatches.setInt(4,seconds);
+           insertStopwatches.setString(5,label);
+
+           int rowsAffected = insertStopwatches.executeUpdate();
+
+           if(rowsAffected != 1){
+               throw new Exception("To much rows affected");
+           }
+
+           connection.commit();
+           return true;
+
+        }catch (Exception e){
+            try{
+                connection.rollback();
+            }catch (SQLException e2){
+                System.out.println("Rollback failed!! " + e2.getMessage());
+            }
+            return false;
+        }finally {
+            try{
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit still false!!");
+            }
+        }
+    }
 
 
 

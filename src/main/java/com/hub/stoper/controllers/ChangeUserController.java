@@ -39,7 +39,7 @@ public class ChangeUserController {
         int id = changeUserListView.getSelectionModel().getSelectedItem().getId();
         DataSource.getInstance().updateCurrentUser(id);
     }
-
+    //Todo delete it when refactoring
     public void selectedItem(){
         System.out.println(changeUserListView.getSelectionModel().getSelectedItem().getName());
     }

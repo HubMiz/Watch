@@ -4,12 +4,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class StopwatchTime  {
+public class StopwatchTime  extends Watch {
 
-    private SimpleIntegerProperty hours;
-    private SimpleIntegerProperty minutes;
-    private SimpleIntegerProperty seconds;
-    private SimpleStringProperty time;
 
     public StopwatchTime(){
         this.hours = new SimpleIntegerProperty(0);
@@ -17,7 +13,7 @@ public class StopwatchTime  {
         this.seconds = new SimpleIntegerProperty(0);
         this.time = new SimpleStringProperty("00:00:00");
     }
-
+    @Override
     public void updateTime(){
         if(seconds.get() < 59){
             seconds.set(seconds.get()+1);
@@ -36,8 +32,7 @@ public class StopwatchTime  {
         time.set(String.format("%02d",hours.get()) + ":" + String.format("%02d",minutes.get())+ ":" + String.format("%02d",seconds.get()));
     }
 
-
-
+    @Override
     public StringProperty getTime() {
         return time;
     }
