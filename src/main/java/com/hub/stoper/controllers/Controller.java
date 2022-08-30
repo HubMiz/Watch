@@ -1,12 +1,10 @@
 package com.hub.stoper.controllers;
 
 
-import com.hub.stoper.model.StopwatchTime;
-import com.hub.stoper.model.Watch;
+import com.hub.stoper.model.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
@@ -20,11 +18,11 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.io.IOException;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Controller {
@@ -34,6 +32,10 @@ public class Controller {
 
     @FXML
     private GridPane mainCenterGridPane;
+
+    public void initialize(){
+        main.getStylesheets().add(getClass().getResource("styles/menu.css").toString());
+    }
 
     @FXML
     public void addNewUserOnClick() {
@@ -91,18 +93,51 @@ public class Controller {
 
     @FXML
     public void mainDisplayAlarms(){
-        mainCenterGridPane.getChildren().clear();//Clear GridPane
+        clearCenterUI();
     }
     @FXML
     public void mainDisplayTimers(){
-        mainCenterGridPane.getChildren().clear();//Clear GridPane
+
+        //Clearing grid pane
+        clearCenterUI();
+
+
+        //Creating rows and columns constraint
+        RowConstraints row1 = new RowConstraints();
+        row1.setVgrow(Priority.ALWAYS);
+        row1.setValignment(VPos.TOP);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        col1.setHalignment(HPos.LEFT);
+
+        mainCenterGridPane.getRowConstraints().add(row1);
+        mainCenterGridPane.getColumnConstraints().add(col1);
+
+        //Adding tilePane to gridPane
+        TilePane tilePaneTimers = new TilePane();
+        tilePaneTimers.setAlignment(Pos.CENTER);
+        tilePaneTimers.setPadding(new Insets(20,20,20,20));
+        tilePaneTimers.setHgap(20);
+        tilePaneTimers.setVgap(20);
+
+
+        //Accessing list of timers for current user
+        List<Timer> timerList = DataSource.getInstance().getUserTimers();
+        timerList.forEach((timer -> tilePaneTimers.getChildren().add(createTimerUI(timer))));
+
+        //Setting id for css
+
+        //Adding Ui elements
+        mainCenterGridPane.add(tilePaneTimers,0,0);
+
+        mainCenterGridPane.setId("timer-grid");
+        mainCenterGridPane.getStylesheets().add(getClass().getResource("styles/timer-selection.css").toString());
     }
     @FXML
     public void mainDisplayStopWatch(){
         //Clearing gridPane from elements
-        mainCenterGridPane.getChildren().clear();
-        mainCenterGridPane.getRowConstraints().clear();
-        mainCenterGridPane.getColumnConstraints().clear();
+        clearCenterUI();
 
         //Creating Row and Column Constraints
         // center + col1 is for timer
@@ -145,12 +180,11 @@ public class Controller {
         vboxForClockAndButtons.setAlignment(Pos.CENTER);
 
         //Creating stopwatch
-        StopwatchTime stopwatchTime = new StopwatchTime();
-        clock.textProperty().bind(stopwatchTime.getTime());//bind data to stopwatch string property
+        WatchStopwatch watchStopwatch = new WatchStopwatch();
+        clock.textProperty().bind(watchStopwatch.getTime());//bind data to stopwatch string property
 
         //Creating timeline to update UI in real time
-        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> stopwatchTime.updateTime()));
-        changeTime.setCycleCount(Timeline.INDEFINITE);
+        Timeline changeTime = createWatch(watchStopwatch);
 
 
 
@@ -170,7 +204,7 @@ public class Controller {
         stopButton.setOnAction((ActionEvent event) -> changeTime.stop());
         saveButton.setOnAction((ActionEvent event ) -> {
             changeTime.stop();
-            saveStopWatchTime(stopwatchTime);
+            saveStopWatchTime(watchStopwatch);
         });
 
 
@@ -196,9 +230,7 @@ public class Controller {
         mainCenterGridPane.getStylesheets().add(getClass().getResource("styles/stoper.css").toString());
 
     }
-
-
-    public void saveStopWatchTime(StopwatchTime watch){
+    public void saveStopWatchTime(WatchStopwatch watch){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Save Time");
         dialog.initOwner(main.getScene().getWindow());
@@ -211,11 +243,12 @@ public class Controller {
             throw new RuntimeException(e);
         }
 
-        SaveStopwatchController controller = loader.getController();
-        controller.setInfo(watch);
 
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        SaveStopwatchController controller = loader.getController();
+        controller.setInfo(watch);
 
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -225,5 +258,82 @@ public class Controller {
         }
 
     }
-    //Todo create function to create dialog panes
+
+    private VBox createTimerUI(Timer timer){
+
+        //Creating UI elements for timer
+        VBox timerUI = new VBox();
+        timerUI.setSpacing(5);
+        timerUI.setAlignment(Pos.CENTER);
+
+        //Creating elements
+        Label name = new Label();
+        Label time = new Label();
+        Button startButton = new Button("Start");
+
+        //Setting UI values
+        name.setText(timer.getName());
+        String timeText = String.format("%02d",timer.getHours()) + ":" + String.format("%02d",timer.getMinutes())+ ":" + String.format("%02d",timer.getSeconds());
+        time.setText(timeText);
+
+
+        startButton.setOnAction((ActionEvent event) ->{
+            clearCenterUI();
+
+            //Todo think about better way to do that
+            RowConstraints center = new RowConstraints();
+            center.setValignment(VPos.BOTTOM);
+            center.setVgrow(Priority.ALWAYS);
+
+            ColumnConstraints col1 = new ColumnConstraints();
+            col1.setHalignment(HPos.CENTER);
+            col1.setHgrow(Priority.ALWAYS);
+
+            WatchTimer watchTimer = new WatchTimer();
+            watchTimer.initializeWatchTimer(timer.getHours(),timer.getMinutes(),timer.getSeconds());
+
+
+            Label clock = new Label();
+            clock.setId("timer-clock");
+            clock.textProperty().bind(watchTimer.getTime());//bind data to watch string property
+
+            createWatch(watchTimer).play();
+
+            mainCenterGridPane.add(clock,0,0);
+            mainCenterGridPane.setAlignment(Pos.CENTER);
+            mainCenterGridPane.setId("timer-grid");
+            mainCenterGridPane.getStylesheets().add(getClass().getResource("styles/timer-selectedclock.css").toString());
+
+        });
+
+        //Adding elements to timer
+        timerUI.getChildren().add(name);
+        timerUI.getChildren().add(time);
+        timerUI.getChildren().add(startButton);
+
+        //Setting id
+        timerUI.setId("timer-timer");
+        name.setId("timer-timer-name");
+        time.setId("timer-timer-time");
+        startButton.setId("timer-timer-start-button");
+
+
+        return timerUI;
+    }
+
+    private void clearCenterUI(){
+        mainCenterGridPane.getChildren().clear();
+        mainCenterGridPane.getRowConstraints().clear();
+        mainCenterGridPane.getColumnConstraints().clear();
+        mainCenterGridPane.getStylesheets().clear();
+    }
+
+    private Timeline createWatch(Watch watch){
+
+        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> watch.updateTime()));
+        changeTime.setCycleCount(Timeline.INDEFINITE);
+
+        return changeTime;
+    }
+
 }

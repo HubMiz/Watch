@@ -1,0 +1,26 @@
+#main-left-menu{
+	-fx-background-color: #281731;
+	-fx-border-color:	#3A1052;
+	-fx-border-color : transparent
+}
+#menu-label{
+	-fx-background-color: #A9A9A9;
+	-fx-border-color:	#808080;
+}
+#menu-alarm-button{
+	-fx-background-color: #A9A9A9;
+	-fx-border-color:	#808080;
+}
+#menu-timer-button{
+	-fx-background-color: #A9A9A9;
+	-fx-border-color:	#808080;
+}
+#menu-stopwatch-button{
+	-fx-background-color: #A9A9A9;
+	-fx-border-color:	#808080;
+}
+#menu-menu{
+	-fx-background-color: #281731;
+	-fx-border-color:	#4B0082;
+	-fx-border-color :  transparent
+}

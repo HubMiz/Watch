@@ -1,0 +1,23 @@
+#timer-timer{
+	-fx-background-color: #686868/*#A9A9A9*/;
+	-fx-border-color: 	  #686868/*#C0C0C0*/;
+}
+#timer-grid{
+	-fx-background-color: #404040/*#696969*/;
+}
+
+#timer-timer-name{
+	-fx-font-size: 15px;
+	-fx-text-fill: 	#0000CD;
+}
+#timer-timer-time{
+	-fx-font-family: "Digital dream";
+	-fx-font-size: 15px;
+	-fx-text-fill:	#0000CD;
+	
+}
+#timer-timer-start-button{
+	-fx-font-size: 15px;
+	-fx-background-color: 	#989898/*#D3D3D3*/;
+	-fx-text-fill:	#0000CD;
+}

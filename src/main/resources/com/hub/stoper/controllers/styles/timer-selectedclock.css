@@ -1,0 +1,10 @@
+#timer-grid{
+	-fx-background-color:  #404040 /*#0f0957*/;
+}
+
+#timer-clock{
+	-fx-font-family: "Digital dream";
+	-fx-text-fill: 	#c4c237/*#c4c237*/;
+	-fx-font-weight: bold;
+	-fx-font-size: 30px;
+}

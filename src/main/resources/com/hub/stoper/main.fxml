@@ -7,7 +7,7 @@
 
 <BorderPane fx:id="main" prefHeight="612.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hub.stoper.controllers.Controller">
     <top>
-        <MenuBar prefHeight="13.0" prefWidth="502.0">
+        <MenuBar id = "menu-menu" prefHeight="13.0" prefWidth="502.0">
             <menus>
                 <Menu text="User">
                     <items>
@@ -19,10 +19,10 @@
         </MenuBar>
     </top>
    <left>
-      <VBox layoutX="145.0" prefWidth="145.0" spacing="10" BorderPane.alignment="CENTER">
+      <VBox id="main-left-menu" layoutX="145.0" prefWidth="145.0" spacing="10" BorderPane.alignment="CENTER">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="58.0" prefWidth="148.0" text="Menu" textAlignment="CENTER" />
-            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Alarm" onAction="#mainDisplayAlarms">
+            <Label id ="menu-label" alignment="CENTER" contentDisplay="CENTER" prefHeight="58.0" prefWidth="148.0" text="Menu" textAlignment="CENTER" />
+            <Button id ="menu-alarm-button" mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Alarm" onAction="#mainDisplayAlarms">
                 <graphic>
                     <ImageView>
                         <image >
@@ -31,7 +31,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Timer" onAction="#mainDisplayTimers" >
+            <Button id ="menu-timer-button" mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Timer" onAction="#mainDisplayTimers" >
                 <graphic>
                     <ImageView>
                         <image>
@@ -40,7 +40,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button  mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Stopwatch" onAction="#mainDisplayStopWatch" >
+            <Button id ="menu-stopwatch-button" mnemonicParsing="false" prefHeight="50.0" prefWidth="145.0" text="Stopwatch" onAction="#mainDisplayStopWatch" >
                 <graphic>
                     <ImageView>
                         <image>

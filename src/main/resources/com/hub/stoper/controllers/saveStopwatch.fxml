@@ -3,7 +3,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.text.*?>
 
-<?import java.lang.String?>
 <?import javafx.scene.layout.VBox?>
 <DialogPane prefHeight="100.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hub.stoper.controllers.SaveStopwatchController">
     <header>
@@ -12,7 +11,7 @@
     <content>
         <VBox alignment="CENTER">
             <Label text="Insert label for time"/>
-             <TextArea fx:id="saveStopwatchLabel" />
+            <TextArea fx:id="saveStopwatchLabel" />
         </VBox>
     </content>
 

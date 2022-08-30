@@ -29,8 +29,18 @@ public class DataSource {
     public static final String COLUMNS_STOPWATCHES_SECONDS = "seconds";
     public static final String COLUMNS_STOPWATCHES_LABEL = "label";
 
-    //QUERY
+    //Minute Timers Table
+    public static final String TABLE_MINUTE_TIMERS = "minuteTimers";
 
+    public static final String COLUMNS_MINUTE_TIMERS_ID = "id";
+    public static final String COLUMNS_MINUTE_TIMERS_USERID = "userID";
+    public static final String COLUMNS_MINUTE_TIMERS_HOURS = "hours";
+    public static final String COLUMNS_MINUTE_TIMERS_MINUTES = "minutes";
+    public static final String COLUMNS_MINUTE_TIMERS_SECONDS = "seconds";
+    public static final String COLUMNS_MINUTE_TIMERS_NAME = "name";
+
+
+    //QUERY
     public static final String QUERY_USERS_BY_NAME = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_CURRENT_USER+
         " FROM " + TABLE_USERS +
         " WHERE " +COLUMNS_USERS_NAME + " = ?";
@@ -41,6 +51,12 @@ public class DataSource {
             " FROM " + TABLE_USERS+
             " WHERE " + COLUMNS_USERS_CURRENT_USER + " = 1 ";
 
+    public static final String QUERY_MINUTE_TIMERS_BY_CURRENT_USER = "SELECT " + COLUMNS_MINUTE_TIMERS_USERID + "," + COLUMNS_MINUTE_TIMERS_HOURS + "," +
+            COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS + "," + COLUMNS_MINUTE_TIMERS_NAME +
+            " FROM " + TABLE_MINUTE_TIMERS +
+            " WHERE " + COLUMNS_MINUTE_TIMERS_USERID + " = ?";
+
+
     //INSERTS
     public static final String INSERT_USER = " INSERT INTO " + TABLE_USERS +
             " (name) VALUES(?)";
@@ -48,18 +64,23 @@ public class DataSource {
             " ("+COLUMNS_STOPWATCHES_USERID+","+COLUMNS_STOPWATCHES_HOURS+","+COLUMNS_STOPWATCHES_MINUTES+","+COLUMNS_STOPWATCHES_SECONDS+","+ COLUMNS_STOPWATCHES_LABEL+")"+
             " VALUES(?,?,?,?,?)";
 
-
     //UPDATES
     public static final String UPDATE_USER_CURRENT_USER_BY_ID = "UPDATE " + TABLE_USERS +
             " SET " + COLUMNS_USERS_CURRENT_USER + " = ?" +
             " WHERE " + COLUMNS_USERS_ID + " = ?";
 
     //Prepared Statements
+    //Query
     private PreparedStatement queryUsersByName;
+    private PreparedStatement queryMinuteTimersByCurrentUsers;
+
+    //Insert
     private PreparedStatement insertUser;
     private PreparedStatement insertStopwatches;
 
+    //Update
     private PreparedStatement updateUserCurrentUserById;
+
 
 
     private static DataSource dataSource = new DataSource();
@@ -81,6 +102,7 @@ public class DataSource {
             insertUser = connection.prepareStatement(INSERT_USER);
             updateUserCurrentUserById = connection.prepareStatement(UPDATE_USER_CURRENT_USER_BY_ID);
             insertStopwatches = connection.prepareStatement(INSERT_STOPWATCH_TIME);
+            queryMinuteTimersByCurrentUsers = connection.prepareStatement(QUERY_MINUTE_TIMERS_BY_CURRENT_USER);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -88,6 +110,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            queryMinuteTimersByCurrentUsers.close();
             insertStopwatches.close();
             updateUserCurrentUserById.close();
             insertUser.close();
@@ -137,7 +160,7 @@ public class DataSource {
             return null;
         }
     }
-
+    //Get current user
     public User getCurrentUser(){
         try(Statement statement = connection.createStatement();
             ResultSet set = statement.executeQuery(QUERY_CURRENT_USER)){
@@ -154,6 +177,32 @@ public class DataSource {
 
         }catch (SQLException e){
             System.out.println(e.getMessage());
+            return null;
+        }
+    }
+    //Returns current user timers
+    public List<Timer> getUserTimers(){
+        try{
+            User currentUser = getCurrentUser();
+            queryMinuteTimersByCurrentUsers.setInt(1,currentUser.getId());
+
+            ResultSet resultSet = queryMinuteTimersByCurrentUsers.executeQuery();
+
+            List<Timer> timerList = new ArrayList<>();
+
+            while (resultSet.next()){
+                Timer timer = new Timer();
+                timer.setUserId(resultSet.getInt(1));
+                timer.setHours(resultSet.getInt(2));
+                timer.setMinutes(resultSet.getInt(3));
+                timer.setSeconds(resultSet.getInt(4));
+                timer.setName(resultSet.getString(5));
+                timerList.add(timer);
+            }
+            return timerList;
+
+        }catch (SQLException e){
+            System.out.println("Something went wrong: " + e.getMessage());
             return null;
         }
     }
@@ -267,7 +316,6 @@ public class DataSource {
             }
         }
     }
-
 
 
 }

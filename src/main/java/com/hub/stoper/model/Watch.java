@@ -11,9 +11,17 @@ public abstract class Watch {
     protected SimpleIntegerProperty seconds;
     protected SimpleStringProperty time;
 
-    public abstract void updateTime();
-    public abstract StringProperty getTime();
+    public Watch(){
+        this.hours = new SimpleIntegerProperty(0);
+        this.minutes = new SimpleIntegerProperty(0);
+        this.seconds = new SimpleIntegerProperty(0);
+        this.time = new SimpleStringProperty("00:00:00");
+    }
 
+    public abstract void updateTime();
+    public StringProperty getTime() {
+        return time;
+    }
     public int getHours() {
         return hours.get();
     }
@@ -41,4 +49,6 @@ public abstract class Watch {
     public SimpleStringProperty timeProperty() {
         return time;
     }
+
+
 }
