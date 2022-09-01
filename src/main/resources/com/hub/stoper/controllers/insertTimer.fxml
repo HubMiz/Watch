@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.hub.stoper.controllers.InsertTimerController"
+            prefHeight="200.0" prefWidth="200.0">
+    <header>
+        <Label text="Insert data for new Timer" alignment="CENTER"/>
+    </header>
+    <content>
+
+        <VBox alignment="CENTER" >
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
+            <Label text="Name" alignment="CENTER"/>
+            <TextField fx:id="insertTimerName"  />
+            <HBox>
+
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" />
+                <Label text="Hours" alignment="CENTER" />
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" />
+                <Label text="Minutes" alignment="CENTER"/>
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" />
+
+            </HBox>
+            <HBox>
+                <TextField fx:id="insertTimerHours" text="0" alignment="CENTER_LEFT"/>
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" />
+                <TextField fx:id="insertTimerMinutes" text="0" alignment="CENTER_RIGHT"/>
+            </HBox>
+
+            <Label text="Seconds" alignment="CENTER_LEFT"/>
+            <TextField fx:id="insertTimerSeconds" text="0" alignment="CENTER_LEFT"/>
+
+        </VBox>
+
+
+    </content>
+
+
+</DialogPane>

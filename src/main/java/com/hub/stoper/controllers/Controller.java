@@ -11,10 +11,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -32,6 +29,8 @@ public class Controller {
 
     @FXML
     private GridPane mainCenterGridPane;
+
+    private TilePane tilePaneTimers;
 
     public void initialize(){
         main.getStylesheets().add(getClass().getResource("styles/menu.css").toString());
@@ -103,24 +102,39 @@ public class Controller {
 
 
         //Creating rows and columns constraint
-        RowConstraints row1 = new RowConstraints();
-        row1.setVgrow(Priority.ALWAYS);
-        row1.setValignment(VPos.TOP);
+        RowConstraints center = new RowConstraints();
+        center.setVgrow(Priority.ALWAYS);
+        center.setValignment(VPos.TOP);
+
+        RowConstraints bottom = new RowConstraints();
+
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setHgrow(Priority.ALWAYS);
         col1.setHalignment(HPos.LEFT);
 
-        mainCenterGridPane.getRowConstraints().add(row1);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHalignment(HPos.RIGHT);
+        col2.setHgrow(Priority.SOMETIMES);
+
+        mainCenterGridPane.getRowConstraints().add(center);
+        mainCenterGridPane.getRowConstraints().add(bottom);
+
         mainCenterGridPane.getColumnConstraints().add(col1);
+        mainCenterGridPane.getColumnConstraints().add(col2);
 
         //Adding tilePane to gridPane
-        TilePane tilePaneTimers = new TilePane();
+        tilePaneTimers = new TilePane();
         tilePaneTimers.setAlignment(Pos.CENTER);
         tilePaneTimers.setPadding(new Insets(20,20,20,20));
         tilePaneTimers.setHgap(20);
         tilePaneTimers.setVgap(20);
 
+        //Creating add button
+        Button addButton = new Button();
+        GridPane.setMargin(addButton,new Insets(0,15,15,0));
+        addButton.setGraphic(new ImageView(new Image(getClass().getResource("/com/hub/stoper/img/add.png").toString())));
+        addButton.setOnAction((ActionEvent event) -> insertTimer());
 
         //Accessing list of timers for current user
         List<Timer> timerList = DataSource.getInstance().getUserTimers();
@@ -130,6 +144,7 @@ public class Controller {
 
         //Adding Ui elements
         mainCenterGridPane.add(tilePaneTimers,0,0);
+        mainCenterGridPane.add(addButton,1,1);
 
         mainCenterGridPane.setId("timer-grid");
         mainCenterGridPane.getStylesheets().add(getClass().getResource("styles/timer-selection.css").toString());
@@ -147,8 +162,6 @@ public class Controller {
         center.setVgrow(Priority.ALWAYS);
 
         RowConstraints bottom = new RowConstraints();
-        center.setValignment(VPos.BOTTOM);
-        center.setVgrow(Priority.SOMETIMES);
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setHalignment(HPos.CENTER);
@@ -259,7 +272,7 @@ public class Controller {
 
     }
 
-    private VBox createTimerUI(Timer timer){
+    private VBox createTimerUI(Timer timer ){
 
         //Creating UI elements for timer
         VBox timerUI = new VBox();
@@ -334,6 +347,50 @@ public class Controller {
         changeTime.setCycleCount(Timeline.INDEFINITE);
 
         return changeTime;
+    }
+
+    private void insertTimer(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Save Time");
+        dialog.initOwner(main.getScene().getWindow());
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("insertTimer.fxml"));
+
+        try{
+            dialog.getDialogPane().setContent(loader.load());
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            throw new Error("Insert Failed");
+        }
+
+        InsertTimerController controller = loader.getController();
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+        while (true) {
+            //Todo try to change optional result to lambda expression
+            Optional<ButtonType> result = dialog.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                if(controller.checkData()){
+                    Timer timer = controller.insertTimer();
+                    if(timer != null){
+                        tilePaneTimers.getChildren().add(createTimerUI(timer));
+                    }
+                    break;
+                }else {
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.setContentText("Invalid data");
+                    error.showAndWait().ifPresent(response -> {
+                        if(response == ButtonType.OK){
+                        }
+                    });
+                }
+
+            } else if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+                System.out.println("Canceled");
+                break;
+            }
+        }
+
     }
 
 }

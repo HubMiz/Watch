@@ -64,6 +64,10 @@ public class DataSource {
             " ("+COLUMNS_STOPWATCHES_USERID+","+COLUMNS_STOPWATCHES_HOURS+","+COLUMNS_STOPWATCHES_MINUTES+","+COLUMNS_STOPWATCHES_SECONDS+","+ COLUMNS_STOPWATCHES_LABEL+")"+
             " VALUES(?,?,?,?,?)";
 
+    public static final String INSERT_TIMER =" INSERT INTO " + TABLE_MINUTE_TIMERS +
+            "("+COLUMNS_MINUTE_TIMERS_USERID + "," + COLUMNS_MINUTE_TIMERS_HOURS + "," + COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS +"," + COLUMNS_MINUTE_TIMERS_NAME +")"+
+            " VALUES(?,?,?,?,?)";
+
     //UPDATES
     public static final String UPDATE_USER_CURRENT_USER_BY_ID = "UPDATE " + TABLE_USERS +
             " SET " + COLUMNS_USERS_CURRENT_USER + " = ?" +
@@ -77,6 +81,7 @@ public class DataSource {
     //Insert
     private PreparedStatement insertUser;
     private PreparedStatement insertStopwatches;
+    private PreparedStatement insertTimer;
 
     //Update
     private PreparedStatement updateUserCurrentUserById;
@@ -103,6 +108,7 @@ public class DataSource {
             updateUserCurrentUserById = connection.prepareStatement(UPDATE_USER_CURRENT_USER_BY_ID);
             insertStopwatches = connection.prepareStatement(INSERT_STOPWATCH_TIME);
             queryMinuteTimersByCurrentUsers = connection.prepareStatement(QUERY_MINUTE_TIMERS_BY_CURRENT_USER);
+            insertTimer = connection.prepareStatement(INSERT_TIMER);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -110,6 +116,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            insertTimer.close();
             queryMinuteTimersByCurrentUsers.close();
             insertStopwatches.close();
             updateUserCurrentUserById.close();
@@ -318,4 +325,40 @@ public class DataSource {
     }
 
 
+    public boolean insertTimer(String label, int hours, int minutes, int seconds) {
+
+        try{
+            connection.setAutoCommit(false);
+
+            User currentUser = getCurrentUser();
+
+            insertTimer.setInt(1,currentUser.getId());
+            insertTimer.setInt(2,hours);
+            insertTimer.setInt(3,minutes);
+            insertTimer.setInt(4,seconds);
+            insertTimer.setString(5,label);
+
+            int affectedRows = insertTimer.executeUpdate();
+            if(affectedRows!=1){
+                throw new SQLException("To much rows affected");
+            }
+            connection.commit();
+            return true;
+
+        }catch (Exception e){
+            try {
+                connection.rollback();
+            }catch (SQLException e2){
+                System.out.println("Rollback didn't work!! " + e2.getMessage());
+            }
+            return false;
+        }finally {
+            try{
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit still false!! " + e.getMessage());
+            }
+        }
+
+    }
 }
