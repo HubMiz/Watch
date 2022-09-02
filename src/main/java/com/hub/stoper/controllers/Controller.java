@@ -4,6 +4,7 @@ package com.hub.stoper.controllers;
 import com.hub.stoper.model.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,10 +16,14 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +31,6 @@ public class Controller {
 
     @FXML
     private BorderPane main;
-
     @FXML
     private GridPane mainCenterGridPane;
 
@@ -197,7 +201,8 @@ public class Controller {
         clock.textProperty().bind(watchStopwatch.getTime());//bind data to stopwatch string property
 
         //Creating timeline to update UI in real time
-        Timeline changeTime = createWatch(watchStopwatch);
+        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> watchStopwatch.updateTime()));
+        changeTime.setCycleCount(Timeline.INDEFINITE);
 
 
 
@@ -314,7 +319,20 @@ public class Controller {
             clock.setId("timer-clock");
             clock.textProperty().bind(watchTimer.getTime());//bind data to watch string property
 
-            createWatch(watchTimer).play();
+            final Timeline changeTime = new Timeline();
+            changeTime.getKeyFrames().add(new KeyFrame(Duration.seconds(1),actionEvent -> {
+                if(watchTimer.getTime().get().equals("00:00:00")){
+                    changeTime.stop();
+
+                    Media media = new Media(getClass().getResource("/com/hub/stoper/controllers/alarm/alarm.mp3").toString());
+                    MediaPlayer player = new MediaPlayer(media);
+                    player.play();
+
+                }
+                watchTimer.updateTime();
+            }));
+            changeTime.setCycleCount(Timeline.INDEFINITE);
+            changeTime.play();
 
             mainCenterGridPane.add(clock,0,0);
             mainCenterGridPane.setAlignment(Pos.CENTER);
@@ -354,14 +372,6 @@ public class Controller {
         mainCenterGridPane.getRowConstraints().clear();
         mainCenterGridPane.getColumnConstraints().clear();
         mainCenterGridPane.getStylesheets().clear();
-    }
-
-    private Timeline createWatch(Watch watch){
-
-        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> watch.updateTime()));
-        changeTime.setCycleCount(Timeline.INDEFINITE);
-
-        return changeTime;
     }
 
     private void insertTimer(){
