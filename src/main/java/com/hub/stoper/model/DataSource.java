@@ -52,7 +52,7 @@ public class DataSource {
             " WHERE " + COLUMNS_USERS_CURRENT_USER + " = 1 ";
 
     public static final String QUERY_MINUTE_TIMERS_BY_CURRENT_USER = "SELECT " + COLUMNS_MINUTE_TIMERS_USERID + "," + COLUMNS_MINUTE_TIMERS_HOURS + "," +
-            COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS + "," + COLUMNS_MINUTE_TIMERS_NAME +
+            COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS + "," + COLUMNS_MINUTE_TIMERS_NAME + "," + COLUMNS_MINUTE_TIMERS_ID +
             " FROM " + TABLE_MINUTE_TIMERS +
             " WHERE " + COLUMNS_MINUTE_TIMERS_USERID + " = ?";
 
@@ -73,6 +73,10 @@ public class DataSource {
             " SET " + COLUMNS_USERS_CURRENT_USER + " = ?" +
             " WHERE " + COLUMNS_USERS_ID + " = ?";
 
+    //DELETES
+    public static final String DELETE_TIMER_BY_ID = "DELETE FROM " + TABLE_MINUTE_TIMERS +
+            " WHERE " + COLUMNS_MINUTE_TIMERS_ID + " = ?";
+
     //Prepared Statements
     //Query
     private PreparedStatement queryUsersByName;
@@ -86,7 +90,8 @@ public class DataSource {
     //Update
     private PreparedStatement updateUserCurrentUserById;
 
-
+    //Delete
+    private PreparedStatement deleteTimerByID;
 
     private static DataSource dataSource = new DataSource();
     private Connection connection;
@@ -109,6 +114,7 @@ public class DataSource {
             insertStopwatches = connection.prepareStatement(INSERT_STOPWATCH_TIME);
             queryMinuteTimersByCurrentUsers = connection.prepareStatement(QUERY_MINUTE_TIMERS_BY_CURRENT_USER);
             insertTimer = connection.prepareStatement(INSERT_TIMER);
+            deleteTimerByID =connection.prepareStatement(DELETE_TIMER_BY_ID);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -116,6 +122,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            deleteTimerByID.close();
             insertTimer.close();
             queryMinuteTimersByCurrentUsers.close();
             insertStopwatches.close();
@@ -204,6 +211,7 @@ public class DataSource {
                 timer.setMinutes(resultSet.getInt(3));
                 timer.setSeconds(resultSet.getInt(4));
                 timer.setName(resultSet.getString(5));
+                timer.setId(resultSet.getInt(6));
                 timerList.add(timer);
             }
             return timerList;
@@ -357,6 +365,34 @@ public class DataSource {
                 connection.setAutoCommit(true);
             }catch (SQLException e){
                 System.out.println("Autocommit still false!! " + e.getMessage());
+            }
+        }
+
+    }
+
+    public void deleteTimerByID(int id) {
+
+        try {
+            connection.setAutoCommit(false);
+            deleteTimerByID.setInt(1,id);
+
+            if(deleteTimerByID.executeUpdate() != 1){
+                throw  new SQLException("To much rows affected");
+            }
+
+            connection.commit();
+
+        }catch (Exception e){
+            try{
+                connection.rollback();
+            }catch (SQLException e2){
+                System.out.println("Couldn't rollback!!");
+            }
+        }finally {
+            try {
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit still off" + e.getMessage());
             }
         }
 

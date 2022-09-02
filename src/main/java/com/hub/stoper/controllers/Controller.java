@@ -283,13 +283,17 @@ public class Controller {
         Label name = new Label();
         Label time = new Label();
         Button startButton = new Button("Start");
+        ContextMenu deleteMenu = new ContextMenu();
+        MenuItem delete = new MenuItem("Delete");
+
+        deleteMenu.getItems().add(delete);
 
         //Setting UI values
         name.setText(timer.getName());
         String timeText = String.format("%02d",timer.getHours()) + ":" + String.format("%02d",timer.getMinutes())+ ":" + String.format("%02d",timer.getSeconds());
         time.setText(timeText);
 
-
+        //Event handler for start
         startButton.setOnAction((ActionEvent event) ->{
             clearCenterUI();
 
@@ -319,6 +323,17 @@ public class Controller {
 
         });
 
+        //Event Handler for delete
+        delete.setOnAction((ActionEvent event) ->{
+            DataSource.getInstance().deleteTimerByID(timer.getId());
+            mainDisplayTimers();
+        });
+
+
+        //
+        name.setContextMenu(deleteMenu);
+        time.setContextMenu(deleteMenu);
+        startButton.setContextMenu(deleteMenu);
         //Adding elements to timer
         timerUI.getChildren().add(name);
         timerUI.getChildren().add(time);
