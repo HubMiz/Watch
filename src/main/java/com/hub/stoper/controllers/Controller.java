@@ -22,6 +22,10 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +37,9 @@ public class Controller {
     private GridPane mainCenterGridPane;
 
     private TilePane tilePaneTimers;
+
+
+    private List<Alarm> alarmList;
 
     public void initialize(){
         main.getStylesheets().add(getClass().getResource("styles/menu.css").toString());
@@ -95,6 +102,60 @@ public class Controller {
     @FXML
     public void mainDisplayAlarms(){
         clearCenterUI();
+
+        //Clearing grid pane
+        clearCenterUI();
+
+        //Creating rows and columns constraint
+        RowConstraints center = new RowConstraints();
+        center.setVgrow(Priority.ALWAYS);
+        center.setValignment(VPos.TOP);
+
+        RowConstraints bottom = new RowConstraints();
+
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        col1.setHalignment(HPos.LEFT);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHalignment(HPos.RIGHT);
+        col2.setHgrow(Priority.SOMETIMES);
+
+        mainCenterGridPane.getRowConstraints().add(center);
+        mainCenterGridPane.getRowConstraints().add(bottom);
+
+        mainCenterGridPane.getColumnConstraints().add(col1);
+        mainCenterGridPane.getColumnConstraints().add(col2);
+
+        //Adding tilePane to gridPane
+        tilePaneTimers = new TilePane();
+        tilePaneTimers.setAlignment(Pos.CENTER);
+        tilePaneTimers.setPadding(new Insets(20,20,20,20));
+        tilePaneTimers.setHgap(20);
+        tilePaneTimers.setVgap(20);
+
+        alarmList = DataSource.getInstance().getUserAlarms();
+        alarmList.forEach((alarm -> tilePaneTimers.getChildren().add(createAlarm(alarm))));
+
+        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> {
+
+            ZoneId id = ZoneId.of("Europe/Warsaw");
+            Instant currentTime = Instant.now();
+
+            ZonedDateTime time = currentTime.atZone(id);
+
+            alarmList.forEach( (alarm) -> {
+                if(checkIfTime(alarm,time)){
+                    Platform.runLater(() -> createAlarmSound("Alarm for: " + alarm.getDate()));
+                }
+            });
+
+
+        }));
+        changeTime.setCycleCount(Timeline.INDEFINITE);
+        changeTime.play();
+        mainCenterGridPane.add(tilePaneTimers,0,0);
     }
     @FXML
     public void mainDisplayTimers(){
@@ -412,6 +473,25 @@ public class Controller {
 
     }
 
+    private VBox createAlarm(Alarm alarm){
+
+        //Creating vbox
+        VBox alarmVbox = new VBox();
+
+        //Creating vbox elements
+        Label name = new Label();
+        Label date = new Label();//;
+
+        name.setText("Alarm");
+        date.setText(alarm.getDate());
+
+        alarmVbox.getChildren().add(name);
+        alarmVbox.getChildren().add(date);
+
+        return alarmVbox;
+
+    }
+
     private void createAlarmSound(String info){
         Alert showAlarm = new Alert(Alert.AlertType.INFORMATION);
 
@@ -428,6 +508,16 @@ public class Controller {
             player.stop();
         }
 //        showAlarm.showAndWait();
+    }
+
+    private boolean checkIfTime(Alarm alarm, ZonedDateTime time){
+        if(alarm.getYear() != time.getYear()) return false;
+        if(alarm.getMonth() != time.getMonthValue()) return false;
+        if(alarm.getDay() != time.getDayOfMonth()) return false;
+        if(alarm.getHour() != time.getHour()) return false;
+        if(alarm.getMinute() != time.getMinute()) return false;
+        if(alarm.getSeconds() != time.getSecond()) return false;
+        return true;
     }
 
 }

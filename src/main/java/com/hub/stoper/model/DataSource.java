@@ -1,8 +1,6 @@
 package com.hub.stoper.model;
 
 
-import java.io.File;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +37,21 @@ public class DataSource {
     public static final String COLUMNS_MINUTE_TIMERS_SECONDS = "seconds";
     public static final String COLUMNS_MINUTE_TIMERS_NAME = "name";
 
+    //Alarm table
+
+    public static final String TABLE_ALARMS = "Alarms";
+
+    public static final String COLUMNS_ALARMS_USERID = "userID";
+    public static final String COLUMNS_ALARMS_ID = "id";
+
+    public static final String COLUMNS_ALARMS_YEAR = "year";
+    public static final String COLUMNS_ALARM_MONTH = "month";
+    public static final String COLUMNS_ALARM_DAY = "day";
+    public static final String COLUMNS_ALARM_HOUR = "hour";
+    public static final String COLUMNS_ALARM_MINUTE = "minute";
+    public static final String COLUMNS_ALARM_SECOND = "seconds";
+    public static final String COLUMNS_ALARM_REPEATABLEID = "repeatableID";
+
 
     //QUERY
     public static final String QUERY_USERS_BY_NAME = "SELECT " +COLUMNS_USERS_ID +","+ COLUMNS_USERS_NAME +","+COLUMNS_USERS_CURRENT_USER+
@@ -55,6 +68,11 @@ public class DataSource {
             COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS + "," + COLUMNS_MINUTE_TIMERS_NAME + "," + COLUMNS_MINUTE_TIMERS_ID +
             " FROM " + TABLE_MINUTE_TIMERS +
             " WHERE " + COLUMNS_MINUTE_TIMERS_USERID + " = ?";
+
+    public static final String QUERY_ALARMS_BY_USER = "SELECT " + COLUMNS_ALARMS_ID + "," + COLUMNS_ALARMS_USERID + "," + COLUMNS_ALARMS_YEAR + "," +
+            COLUMNS_ALARM_MONTH + "," + COLUMNS_ALARM_DAY + "," + COLUMNS_ALARM_HOUR + "," + COLUMNS_ALARM_MINUTE + "," + COLUMNS_ALARM_SECOND + "," + COLUMNS_ALARM_REPEATABLEID +
+            " FROM " + TABLE_ALARMS +
+            " WHERE " + COLUMNS_ALARMS_USERID + " = ?";
 
 
     //INSERTS
@@ -81,6 +99,7 @@ public class DataSource {
     //Query
     private PreparedStatement queryUsersByName;
     private PreparedStatement queryMinuteTimersByCurrentUsers;
+    private PreparedStatement queryAlarmsByUser;
 
     //Insert
     private PreparedStatement insertUser;
@@ -115,6 +134,7 @@ public class DataSource {
             queryMinuteTimersByCurrentUsers = connection.prepareStatement(QUERY_MINUTE_TIMERS_BY_CURRENT_USER);
             insertTimer = connection.prepareStatement(INSERT_TIMER);
             deleteTimerByID =connection.prepareStatement(DELETE_TIMER_BY_ID);
+            queryAlarmsByUser = connection.prepareStatement(QUERY_ALARMS_BY_USER);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -122,6 +142,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            queryAlarmsByUser.close();
             deleteTimerByID.close();
             insertTimer.close();
             queryMinuteTimersByCurrentUsers.close();
@@ -223,6 +244,41 @@ public class DataSource {
     }
     //takes new user id and set him as current user and makes sure that current user will no longer be current
     //Todo test nulls
+
+    public List<Alarm> getUserAlarms(){
+        try{
+            User currentUser = getCurrentUser();
+            queryAlarmsByUser.setInt(1,currentUser.getId());
+
+            ResultSet set = queryAlarmsByUser.executeQuery();
+
+            List<Alarm> alarmList = new ArrayList<>();
+
+            while (set.next()){
+                Alarm alarm = new Alarm();
+                alarm.setId(set.getInt(1));
+                alarm.setUserId(set.getInt(2));
+
+                alarm.setYear(set.getInt(3));
+                alarm.setMonth(set.getInt(4));
+                alarm.setDay(set.getInt(5));
+
+                alarm.setHour(set.getInt(6));
+                alarm.setMinute(set.getInt(7));
+                alarm.setSeconds(set.getInt(8));
+
+                alarm.setRepeatableId(set.getInt(9) );
+
+                alarmList.add(alarm);
+            }
+            return alarmList;
+
+        }catch (SQLException e){
+
+            return null;
+        }
+    }
+
     public boolean updateCurrentUser(int id){
         User currentUser = getCurrentUser();
         try{
