@@ -20,10 +20,8 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -323,11 +321,7 @@ public class Controller {
             changeTime.getKeyFrames().add(new KeyFrame(Duration.seconds(1),actionEvent -> {
                 if(watchTimer.getTime().get().equals("00:00:00")){
                     changeTime.stop();
-
-                    Media media = new Media(getClass().getResource("/com/hub/stoper/controllers/alarm/alarm.mp3").toString());
-                    MediaPlayer player = new MediaPlayer(media);
-                    player.play();
-
+                    Platform.runLater(() -> createAlarmSound("Your timer ended"));
                 }
                 watchTimer.updateTime();
             }));
@@ -416,6 +410,24 @@ public class Controller {
             }
         }
 
+    }
+
+    private void createAlarmSound(String info){
+        Alert showAlarm = new Alert(Alert.AlertType.INFORMATION);
+
+        showAlarm.setTitle("Alarm");
+        showAlarm.setContentText(info);
+
+        Media media = new Media(getClass().getResource("/com/hub/stoper/controllers/alarm/alarm.mp3").toString());
+        MediaPlayer player = new MediaPlayer(media);
+        player.setOnEndOfMedia(() -> player.seek(Duration.ZERO));
+        player.play();
+
+        Optional<ButtonType> result = showAlarm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            player.stop();
+        }
+//        showAlarm.showAndWait();
     }
 
 }
