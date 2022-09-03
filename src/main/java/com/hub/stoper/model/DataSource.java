@@ -94,6 +94,8 @@ public class DataSource {
     //DELETES
     public static final String DELETE_TIMER_BY_ID = "DELETE FROM " + TABLE_MINUTE_TIMERS +
             " WHERE " + COLUMNS_MINUTE_TIMERS_ID + " = ?";
+    public static final String DELETE_ALARMS_BY_ID = " DELETE FROM " + TABLE_ALARMS +
+            " WHERE " + COLUMNS_ALARMS_ID + " = ?";
 
     //Prepared Statements
     //Query
@@ -111,6 +113,7 @@ public class DataSource {
 
     //Delete
     private PreparedStatement deleteTimerByID;
+    private PreparedStatement deleteAlarmsById;
 
     private static DataSource dataSource = new DataSource();
     private Connection connection;
@@ -135,6 +138,7 @@ public class DataSource {
             insertTimer = connection.prepareStatement(INSERT_TIMER);
             deleteTimerByID =connection.prepareStatement(DELETE_TIMER_BY_ID);
             queryAlarmsByUser = connection.prepareStatement(QUERY_ALARMS_BY_USER);
+            deleteAlarmsById = connection.prepareStatement(DELETE_ALARMS_BY_ID);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -142,6 +146,7 @@ public class DataSource {
     }
     public void close(){
         try {
+            deleteAlarmsById.close();
             queryAlarmsByUser.close();
             deleteTimerByID.close();
             insertTimer.close();
@@ -150,6 +155,8 @@ public class DataSource {
             updateUserCurrentUserById.close();
             insertUser.close();
             queryUsersByName.close();
+
+
             connection.close();
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
@@ -449,6 +456,38 @@ public class DataSource {
                 connection.setAutoCommit(true);
             }catch (SQLException e){
                 System.out.println("Autocommit still off" + e.getMessage());
+            }
+        }
+
+    }
+
+    public void deleteAlarmsById(int id){
+
+        try {
+            connection.setAutoCommit(false);
+
+            deleteAlarmsById.setInt(1,id);
+
+            int rowsAffected = deleteAlarmsById.executeUpdate();
+
+            if(rowsAffected != 1){
+                throw new SQLException("Too much rows affected");
+            }
+
+            connection.commit();
+
+        }catch (Exception e){
+            try{
+                connection.rollback();
+                System.out.println("Delete failed!!: " + e.getMessage());
+            }catch (SQLException e2){
+                System.out.println("Rollback failed!!: " +e2.getMessage());
+            }
+        }finally {
+            try {
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit still false: " + e.getMessage());
             }
         }
 

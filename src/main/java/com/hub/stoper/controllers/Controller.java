@@ -25,10 +25,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+//Todo load once more alarms and delete and create new timeline for their alarms
+//Todo Refactor Code
 public class Controller {
 
     @FXML
@@ -38,11 +39,35 @@ public class Controller {
 
     private TilePane tilePaneTimers;
 
+    private Timeline watchTime;
+    private Timeline alarmTime;
 
     private List<Alarm> alarmList;
 
     public void initialize(){
         main.getStylesheets().add(getClass().getResource("styles/menu.css").toString());
+        alarmList = DataSource.getInstance().getUserAlarms();
+        alarmList.forEach(alarm -> {
+            if(isOutdated(alarm)){
+                DataSource.getInstance().deleteAlarmsById(alarm.getId());
+            }
+        });
+        alarmTime = new Timeline(new KeyFrame(Duration.seconds(1), actionEvent -> {
+
+            ZoneId id = ZoneId.of("Europe/Warsaw");
+            Instant currentTime = Instant.now();
+
+            ZonedDateTime time = currentTime.atZone(id);
+            alarmList.forEach( (alarm) -> {
+                if(checkIfTime(alarm,time)){
+                    Platform.runLater(() -> createAlarmSound("Alarm for: " + alarm.getDate()));
+                }
+            });
+
+        }));
+
+        alarmTime.setCycleCount(Timeline.INDEFINITE);
+        alarmTime.play();
     }
 
     @FXML
@@ -135,26 +160,8 @@ public class Controller {
         tilePaneTimers.setHgap(20);
         tilePaneTimers.setVgap(20);
 
-        alarmList = DataSource.getInstance().getUserAlarms();
         alarmList.forEach((alarm -> tilePaneTimers.getChildren().add(createAlarm(alarm))));
 
-        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> {
-
-            ZoneId id = ZoneId.of("Europe/Warsaw");
-            Instant currentTime = Instant.now();
-
-            ZonedDateTime time = currentTime.atZone(id);
-
-            alarmList.forEach( (alarm) -> {
-                if(checkIfTime(alarm,time)){
-                    Platform.runLater(() -> createAlarmSound("Alarm for: " + alarm.getDate()));
-                }
-            });
-
-
-        }));
-        changeTime.setCycleCount(Timeline.INDEFINITE);
-        changeTime.play();
         mainCenterGridPane.add(tilePaneTimers,0,0);
     }
     @FXML
@@ -260,8 +267,8 @@ public class Controller {
         clock.textProperty().bind(watchStopwatch.getTime());//bind data to stopwatch string property
 
         //Creating timeline to update UI in real time
-        final Timeline changeTime = new Timeline(new KeyFrame(Duration.seconds(1),actionEvent -> watchStopwatch.updateTime()));
-        changeTime.setCycleCount(Timeline.INDEFINITE);
+        watchTime = new Timeline(new KeyFrame(Duration.seconds(1), actionEvent -> watchStopwatch.updateTime()));
+        watchTime.setCycleCount(Timeline.INDEFINITE);
 
 
 
@@ -277,10 +284,10 @@ public class Controller {
         saveButton.setGraphic(new ImageView(new Image(getClass().getResource("/com/hub/stoper/img/download.png").toString())));
 
         //Setting button actions
-        startButton.setOnAction((ActionEvent event) ->changeTime.play());
-        stopButton.setOnAction((ActionEvent event) -> changeTime.stop());
+        startButton.setOnAction((ActionEvent event) -> watchTime.play());
+        stopButton.setOnAction((ActionEvent event) -> watchTime.stop());
         saveButton.setOnAction((ActionEvent event ) -> {
-            changeTime.stop();
+            watchTime.stop();
             saveStopWatchTime(watchStopwatch);
         });
 
@@ -378,16 +385,16 @@ public class Controller {
             clock.setId("timer-clock");
             clock.textProperty().bind(watchTimer.getTime());//bind data to watch string property
 
-            final Timeline changeTime = new Timeline();
-            changeTime.getKeyFrames().add(new KeyFrame(Duration.seconds(1),actionEvent -> {
+            watchTime = new Timeline();
+            watchTime.getKeyFrames().add(new KeyFrame(Duration.seconds(1), actionEvent -> {
                 if(watchTimer.getTime().get().equals("00:00:00")){
-                    changeTime.stop();
+                    watchTime.stop();
                     Platform.runLater(() -> createAlarmSound("Your timer ended"));
                 }
                 watchTimer.updateTime();
             }));
-            changeTime.setCycleCount(Timeline.INDEFINITE);
-            changeTime.play();
+            watchTime.setCycleCount(Timeline.INDEFINITE);
+            watchTime.play();
 
             mainCenterGridPane.add(clock,0,0);
             mainCenterGridPane.setAlignment(Pos.CENTER);
@@ -427,6 +434,11 @@ public class Controller {
         mainCenterGridPane.getRowConstraints().clear();
         mainCenterGridPane.getColumnConstraints().clear();
         mainCenterGridPane.getStylesheets().clear();
+        try{
+            watchTime.stop();
+        }catch (Exception e){
+            watchTime = null;
+        }
     }
 
     private void insertTimer(){
@@ -518,6 +530,27 @@ public class Controller {
         if(alarm.getMinute() != time.getMinute()) return false;
         if(alarm.getSeconds() != time.getSecond()) return false;
         return true;
+    }
+
+    private boolean isOutdated(Alarm alarm){
+        ZoneId id = ZoneId.of("Europe/Warsaw");
+        Instant currentTime = Instant.now();
+
+        ZonedDateTime time = currentTime.atZone(id);
+
+        boolean outdated = false;
+
+        if(alarm.getYear() < time.getYear()){
+            outdated = true;
+        } else if (alarm.getMonth() < time.getMonthValue()) {
+            outdated = true;
+        } else if (alarm.getDay() < time.getDayOfMonth()) {
+            outdated = true;
+        }else if(alarm.getHour() < time.getHour()){
+            outdated = true;
+        }
+
+        return outdated;
     }
 
 }
