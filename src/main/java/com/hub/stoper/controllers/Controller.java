@@ -30,6 +30,7 @@ import java.util.Optional;
 
 //Todo load once more alarms and delete and create new timeline for their alarms
 //Todo Refactor Code
+//Todo Allow adding alarms
 public class Controller {
 
     @FXML
@@ -160,9 +161,17 @@ public class Controller {
         tilePaneTimers.setHgap(20);
         tilePaneTimers.setVgap(20);
 
-        alarmList.forEach((alarm -> tilePaneTimers.getChildren().add(createAlarm(alarm))));
+        //Adding UI elements
+        alarmList.forEach((alarm -> tilePaneTimers.getChildren().add(createAlarmUI(alarm))));
+        Button insertButton = new Button();
+
+
+        GridPane.setMargin(insertButton,new Insets(0,15,15,0));
+        insertButton.setGraphic(new ImageView(new Image(getClass().getResource("/com/hub/stoper/img/add.png").toString())));
+        insertButton.setOnAction((ActionEvent event) -> insertAlarm());
 
         mainCenterGridPane.add(tilePaneTimers,0,0);
+        mainCenterGridPane.add(insertButton,1,1);
     }
     @FXML
     public void mainDisplayTimers(){
@@ -441,9 +450,57 @@ public class Controller {
         }
     }
 
+    //Todo Create one method for both insert --> maybe interface?
+    private void insertAlarm(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Insert Alarm");
+        dialog.initOwner(main.getScene().getWindow());
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("insertAlarm.fxml"));
+
+        try{
+            dialog.getDialogPane().setContent(loader.load());
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            throw new Error("Insert Failed");
+        }
+
+        InsertAlarmController controller = loader.getController();
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+
+        while (true){
+            Optional<ButtonType> result = dialog.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                if(controller.checkData()){
+                    Alarm alarm = controller.insertAlarm();
+                    if(alarm != null){
+                        tilePaneTimers.getChildren().add(createAlarmUI(alarm));
+                        alarmList.add(alarm);
+                    }
+                    break;
+                }else {
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.setContentText("Invalid data");
+                    error.showAndWait().ifPresent(response -> {
+                        if(response == ButtonType.OK){
+                        }
+                    });
+                }
+
+            } else if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+                System.out.println("Canceled");
+                break;
+            }
+        }
+
+
+    }
+
     private void insertTimer(){
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Save Time");
+        dialog.setTitle("Insert Timer");
         dialog.initOwner(main.getScene().getWindow());
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("insertTimer.fxml"));
@@ -485,9 +542,10 @@ public class Controller {
 
     }
 
-    private VBox createAlarm(Alarm alarm){
+    private VBox createAlarmUI(Alarm alarm){
 
         //Creating vbox
+
         VBox alarmVbox = new VBox();
 
         //Creating vbox elements

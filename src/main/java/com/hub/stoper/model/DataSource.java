@@ -2,7 +2,9 @@ package com.hub.stoper.model;
 
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class DataSource {
@@ -45,12 +47,12 @@ public class DataSource {
     public static final String COLUMNS_ALARMS_ID = "id";
 
     public static final String COLUMNS_ALARMS_YEAR = "year";
-    public static final String COLUMNS_ALARM_MONTH = "month";
-    public static final String COLUMNS_ALARM_DAY = "day";
-    public static final String COLUMNS_ALARM_HOUR = "hour";
-    public static final String COLUMNS_ALARM_MINUTE = "minute";
-    public static final String COLUMNS_ALARM_SECOND = "seconds";
-    public static final String COLUMNS_ALARM_REPEATABLEID = "repeatableID";
+    public static final String COLUMNS_ALARMS_MONTH = "month";
+    public static final String COLUMNS_ALARMS_DAY = "day";
+    public static final String COLUMNS_ALARMS_HOUR = "hour";
+    public static final String COLUMNS_ALARMS_MINUTE = "minute";
+    public static final String COLUMNS_ALARMS_SECOND = "seconds";
+    public static final String COLUMNS_ALARMS_REPEATABLEID = "repeatableID";
 
 
     //QUERY
@@ -70,7 +72,7 @@ public class DataSource {
             " WHERE " + COLUMNS_MINUTE_TIMERS_USERID + " = ?";
 
     public static final String QUERY_ALARMS_BY_USER = "SELECT " + COLUMNS_ALARMS_ID + "," + COLUMNS_ALARMS_USERID + "," + COLUMNS_ALARMS_YEAR + "," +
-            COLUMNS_ALARM_MONTH + "," + COLUMNS_ALARM_DAY + "," + COLUMNS_ALARM_HOUR + "," + COLUMNS_ALARM_MINUTE + "," + COLUMNS_ALARM_SECOND + "," + COLUMNS_ALARM_REPEATABLEID +
+            COLUMNS_ALARMS_MONTH + "," + COLUMNS_ALARMS_DAY + "," + COLUMNS_ALARMS_HOUR + "," + COLUMNS_ALARMS_MINUTE + "," + COLUMNS_ALARMS_SECOND + "," + COLUMNS_ALARMS_REPEATABLEID +
             " FROM " + TABLE_ALARMS +
             " WHERE " + COLUMNS_ALARMS_USERID + " = ?";
 
@@ -83,9 +85,15 @@ public class DataSource {
             " VALUES(?,?,?,?,?)";
 
     public static final String INSERT_TIMER =" INSERT INTO " + TABLE_MINUTE_TIMERS +
-            "("+COLUMNS_MINUTE_TIMERS_USERID + "," + COLUMNS_MINUTE_TIMERS_HOURS + "," + COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS +"," + COLUMNS_MINUTE_TIMERS_NAME +")"+
+            "("+COLUMNS_MINUTE_TIMERS_USERID + "," + COLUMNS_MINUTE_TIMERS_HOURS + "," + COLUMNS_MINUTE_TIMERS_MINUTES + "," + COLUMNS_MINUTE_TIMERS_SECONDS +"," + COLUMNS_MINUTE_TIMERS_NAME +")" +
             " VALUES(?,?,?,?,?)";
 
+    public static final String INSERT_ALARM = " INSERT INTO " + TABLE_ALARMS +
+            "(" + COLUMNS_ALARMS_USERID + ","+
+            COLUMNS_ALARMS_YEAR + ","+ COLUMNS_ALARMS_MONTH + ","+ COLUMNS_ALARMS_DAY + "," +
+            COLUMNS_ALARMS_HOUR + ","+ COLUMNS_ALARMS_MINUTE + ","+ COLUMNS_ALARMS_SECOND + "," +
+            COLUMNS_ALARMS_REPEATABLEID + ")" +
+            " VALUES(?,?,?,?,?,?,?,?)";
     //UPDATES
     public static final String UPDATE_USER_CURRENT_USER_BY_ID = "UPDATE " + TABLE_USERS +
             " SET " + COLUMNS_USERS_CURRENT_USER + " = ?" +
@@ -107,6 +115,7 @@ public class DataSource {
     private PreparedStatement insertUser;
     private PreparedStatement insertStopwatches;
     private PreparedStatement insertTimer;
+    private PreparedStatement insertAlarm;
 
     //Update
     private PreparedStatement updateUserCurrentUserById;
@@ -139,6 +148,7 @@ public class DataSource {
             deleteTimerByID =connection.prepareStatement(DELETE_TIMER_BY_ID);
             queryAlarmsByUser = connection.prepareStatement(QUERY_ALARMS_BY_USER);
             deleteAlarmsById = connection.prepareStatement(DELETE_ALARMS_BY_ID);
+            insertAlarm = connection.prepareStatement(INSERT_ALARM);
         }catch (SQLException e){
             System.out.println("Something went wrong: " + e.getMessage());
             e.printStackTrace();
@@ -146,6 +156,8 @@ public class DataSource {
     }
     public void close(){
         try {
+
+            insertAlarm.close();
             deleteAlarmsById.close();
             queryAlarmsByUser.close();
             deleteTimerByID.close();
@@ -488,6 +500,60 @@ public class DataSource {
                 connection.setAutoCommit(true);
             }catch (SQLException e){
                 System.out.println("Autocommit still false: " + e.getMessage());
+            }
+        }
+
+    }
+
+    public int insertAlarm(LocalDate date, int hours, int minutes, int seconds) {
+
+        try{
+
+            connection.setAutoCommit(false);
+            User currentUser = getCurrentUser();
+
+            insertAlarm.setInt(1,currentUser.getId());
+
+            insertAlarm.setInt(2,date.getYear());
+            insertAlarm.setInt(3,date.getMonthValue());
+            insertAlarm.setInt(4,date.getDayOfMonth());
+
+            insertAlarm.setInt(5,hours);
+            insertAlarm.setInt(6,minutes);
+            insertAlarm.setInt(7,seconds);
+
+            insertAlarm.setInt(8,0);
+
+            int affectedRows = insertAlarm.executeUpdate();
+            int id;
+
+            if(affectedRows == 0 || affectedRows > 1 ){
+                throw new SQLException("Inserting failed");
+            }
+
+            try (ResultSet generatedKeys = insertAlarm.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    id = (int)(generatedKeys.getLong(1));
+                }
+                else {
+                    throw new SQLException("Getting id failed");
+                }
+            }
+            return id;
+
+        }catch (Exception e){
+            try{
+                connection.rollback();
+            }catch (SQLException rollbackException){
+                System.out.println("Rollback failed!!!" + e.getMessage());
+            }
+            return -1;
+
+        }finally {
+            try{
+                connection.setAutoCommit(true);
+            }catch (SQLException e){
+                System.out.println("Autocommit still false!!!: " +e.getMessage());
             }
         }
 
