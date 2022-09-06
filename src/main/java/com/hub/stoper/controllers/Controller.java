@@ -18,6 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class Controller {
     public void initialize(){
         main.getStylesheets().add(getClass().getResource("styles/menu.css").toString());
         loadAlarms();
+        mainDisplayAlarms();
     }
 
     @FXML
@@ -170,6 +172,8 @@ public class Controller {
 
         //Adding styles
         mainCenterGridPane.setId("alarm-grid");
+        tilePaneTimers.setId("alarm-pane");
+        mainCenterGridPane.getStylesheets().add(getClass().getResource("/com/hub/stoper/controllers/styles/alarm.css").toString());
     }
     @FXML
     public void mainDisplayTimers(){
@@ -556,6 +560,7 @@ public class Controller {
 
         name.setAlignment(Pos.CENTER);
         date.setAlignment(Pos.CENTER);
+        name.setTextAlignment(TextAlignment.CENTER);
 
         name.setText("Alarm");
         date.setText(alarm.getDate());
@@ -640,7 +645,6 @@ public class Controller {
                 alarmList.add(alarm);
             }
         });
-        System.out.println(alarmList);
         if(alarmList.size() > 0) {
             checkAlarms();
         }

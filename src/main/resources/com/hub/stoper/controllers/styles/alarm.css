@@ -1,0 +1,24 @@
+#alarm-grid{
+	-fx-background-color: #16213E;
+	
+}
+
+
+#alarm-alarm{
+	
+	
+}
+
+#alarm-alarm-date{
+	
+	-fx-font-family: "Digital dream";
+	-fx-font-size: 20px;
+	-fx-text-fill: #533483;
+}
+
+#alarm-alarm-name{	
+
+	-fx-font-family: "Digital dream";
+	-fx-font-size: 20px;
+	-fx-text-fill: #533483;
+}
