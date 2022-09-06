@@ -144,7 +144,7 @@ public class Alarm {
 
     public String getDate(){
 
-        return String.format("%d-%d-%d  %02d:%02d:%02d",getYear(),getMonth(),getDay(),getHour(),getMinute(),getSeconds());
+        return String.format("%d-%d-%d %02d:%02d:%02d",getYear(),getMonth(),getDay(),getHour(),getMinute(),getSeconds());
 
 
     }
